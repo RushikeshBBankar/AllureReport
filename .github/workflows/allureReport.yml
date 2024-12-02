@@ -1,4 +1,4 @@
-name: Cypress Automation with Allure Reports
+name: Cypress Automation with Allure Reports git dependancy
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20' # or any version compatible with your project
+          node-version: '16' # or any version compatible with your project
 
       # Step 3: Install dependencies
       - name: Install Dependencies
@@ -29,14 +29,21 @@ jobs:
       - name: Run Cypress Tests
         run: npx cypress run --env allure=true
 
-      # Step 5: Install Allure command-line tool
+      # Step 5: Download and Install Allure CLI using GitHub Releases
       - name: Install Allure CLI
         run: |
-          curl -O https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.22.5/allure-commandline-2.22.5.zip
-          unzip allure-commandline-2.22.5.zip -d /opt/
-          export PATH=$PATH:/opt/allure-2.22.5/bin
+          # Download Allure CLI zip file from GitHub
+          curl -LO https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
+          # Create a directory for Allure
+          mkdir -p /opt/allure
+          # Unzip the Allure archive
+          unzip allure-2.32.0.zip -d /opt/allure
+          # Add Allure to PATH
+          echo "PATH=\$PATH:/opt/allure/allure-2.32.0/bin" >> $GITHUB_ENV
+          # Verify installation
+          allure --version
 
-      # Step 6: Generate Allure reports
+      # Step 6: Generate Allure Report
       - name: Generate Allure Report
         run: allure generate allure-results --clean -o allure-report
 
