@@ -1,4 +1,4 @@
-name: Cypress Automation with Allure Reports
+name: Allure Reports
 
 on:
   push:

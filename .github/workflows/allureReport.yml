@@ -1,4 +1,4 @@
-name: Cypress Automation with Allure Reports git dependancy
+name: Cypress Automation with Allure Reports Git Dependency
 
 on:
   push:
@@ -29,17 +29,14 @@ jobs:
       - name: Run Cypress Tests
         run: npx cypress run --env allure=true
 
-      # Step 5: Download and Install Allure CLI using GitHub Releases
+      # Step 5: Download and Install Allure CLI
       - name: Install Allure CLI
         run: |
           # Download Allure CLI zip file from GitHub
-          curl -LO https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
-          # Create a directory for Allure
-          mkdir -p /opt/allure
-          # Unzip the Allure archive
-          unzip allure-2.32.0.zip -d /opt/allure
-          # Add Allure to PATH
-          echo "PATH=\$PATH:/opt/allure/allure-2.32.0/bin" >> $GITHUB_ENV
+          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
+          unzip allure.zip -d /opt/allure/
+          sudo mv /opt/allure/allure-2.32.0 /opt/allure/allure
+          sudo ln -s /opt/allure/allure/bin/allure /usr/local/bin/allure
           # Verify installation
           allure --version
 
@@ -53,3 +50,25 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./allure-report
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Download and Install Allure CLI
+      - name: Install Allure CLI
+        run: |
+          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
+          unzip allure.zip -d /opt/allure/
+          sudo mv /opt/allure/allure-2.32.0 /opt/allure/allure
+          sudo ln -s /opt/allure/allure/bin/allure /usr/local/bin/allure
+
+      # Step 3: Verify Allure installation
+      - name: Verify Allure installation
+        run: allure --version
+
+      # Add additional steps as needed
