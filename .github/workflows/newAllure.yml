@@ -1,0 +1,75 @@
+name: Cypress Automation with Allure Reports Git Dependency
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  cypress-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # or any version compatible with your project
+
+      # Step 3: Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Run Cypress tests
+      - name: Run Cypress Tests
+        run: npx cypress run --env allure=true
+
+      # Step 5: Download and Install Allure CLI
+      - name: Install Allure CLI
+        run: |
+          # Download Allure CLI zip file from GitHub
+          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
+          unzip allure.zip -d /opt/allure/
+          sudo mv /opt/allure/allure-2.32.0 /opt/allure/allure
+          sudo ln -s /opt/allure/allure/bin/allure /usr/local/bin/allure
+          # Verify installation
+          allure --version
+
+      # Step 6: Generate Allure Report
+      - name: Generate Allure Report
+        run: allure serve allure-results
+
+      # Step 7: Publish Allure Report (optional, using GitHub Pages)
+      - name: Deploy Allure Report
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Download and Install Allure CLI
+      - name: Install Allure CLI
+        run: |
+          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
+          unzip allure.zip -d /opt/allure/
+          sudo mv /opt/allure/allure-2.32.0 /opt/allure/allure
+          sudo ln -s /opt/allure/allure/bin/allure /usr/local/bin/allure
+
+      # Step 3: Verify Allure installation
+      - name: Verify Allure installation
+        run: allure --version
+
+      # Add additional steps as needed
