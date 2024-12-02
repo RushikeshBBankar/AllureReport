@@ -1,0 +1,82 @@
+name: Cypress Automation with Allure Reports Git Dependency
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  cypress-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # or any version compatible with your project
+
+      # Step 3: Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Run Cypress tests
+      - name: Run Cypress Tests
+        run: npx cypress run --env allure=true
+
+      # Step 5: Download and Install Allure CLI
+      - name: Install Allure CLI
+        run: |
+          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
+          unzip allure.zip -d /opt/allure/
+          sudo mv /opt/allure/allure-2.32.0 /opt/allure/allure
+          sudo ln -s /opt/allure/allure/bin/allure /usr/local/bin/allure
+          allure --version
+
+      # Step 6: Generate Allure Report
+      - name: Generate Allure Report
+        run: allure serve allure-results &
+      
+      # Step 7: Install Chromium for headless browsing
+      - name: Install Chromium for headless browsing
+        run: |
+          sudo apt update
+          sudo apt install -y chromium-browser
+
+      # Step 8: Run Chromium in headless mode to open the Allure report
+      - name: Open Allure report in headless Chromium
+        run: |
+          chromium-browser --headless --disable-gpu --no-sandbox --remote-debugging-port=9222 http://localhost:8080 &
+          
+      # Step 9: Publish Allure Report (optional, using GitHub Pages)
+      - name: Deploy Allure Report
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Step 2: Download and Install Allure CLI
+      - name: Install Allure CLI
+        run: |
+          curl -L -o allure.zip https://github.com/allure-framework/allure2/releases/download/2.32.0/allure-2.32.0.zip
+          unzip allure.zip -d /opt/allure/
+          sudo mv /opt/allure/allure-2.32.0 /opt/allure/allure
+          sudo ln -s /opt/allure/allure/bin/allure /usr/local/bin/allure
+
+      # Step 3: Verify Allure installation
+      - name: Verify Allure installation
+        run: allure --version
